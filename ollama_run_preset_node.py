@@ -45,8 +45,9 @@ class OllamaRunPresetNode:
     RETURN_NAMES = ("response",)
     FUNCTION = "run"
 
-    WRITEABLE = ["preset_name", "model_name", "user_prompt"]
+    WRITEABLE = ["ip_port", "preset_name", "model_name", "user_prompt"]
     INPUT_LABELS = {
+        "ip_port": "ip_port",
         "preset_name": "preset_name",
         "model_name": "model_name",
         "user_prompt": "user_prompt",
@@ -72,6 +73,7 @@ class OllamaRunPresetNode:
 
         return {
             "required": {
+                "ip_port": ("STRING", {"default": "localhost:11434"}),
                 "preset_name": (presets,),
                 "model_name": (models,),
                 "user_prompt": ("STRING", {"multiline": True, "lines": 5, "default": ""}),
@@ -79,7 +81,7 @@ class OllamaRunPresetNode:
             }
         }
 
-    def run(self, preset_name: str, model_name: str, user_prompt: str, img):
+    def run(self, ip_port: str, preset_name: str, model_name: str, user_prompt: str, img):
         preset_dir = get_presets_dir()
         path = os.path.join(preset_dir, preset_name)
         system_prompt = ""
@@ -90,7 +92,7 @@ class OllamaRunPresetNode:
             except Exception as e:
                 print(f"[OllamaRunPresetNode] Can't read {path}: {e}")
 
-        url = "http://localhost:11434/v1/chat/completions"
+        url = f"http://{ip_port}/v1/chat/completions"
         headers = {"Content-Type": "application/json"}
 
         if img is not None:
