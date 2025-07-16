@@ -77,11 +77,13 @@ class OllamaRunPresetNode:
                 "preset_name": (presets,),
                 "model_name": (models,),
                 "user_prompt": ("STRING", {"multiline": True, "lines": 5, "default": ""}),
+            },
+            "optional": {
                 "img": ("IMAGE", {}),
-            }
+            },
         }
 
-    def run(self, ip_port: str, preset_name: str, model_name: str, user_prompt: str, img):
+    def run(self, ip_port: str, preset_name: str, model_name: str, user_prompt: str, img=None):
         preset_dir = get_presets_dir()
         path = os.path.join(preset_dir, preset_name)
         system_prompt = ""
