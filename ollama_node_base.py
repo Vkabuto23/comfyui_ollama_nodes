@@ -23,7 +23,7 @@ class OllamaNodeBase:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("response",)
     FUNCTION     = "call_ollama"
-    CATEGORY     = "Ollama"
+    CATEGORY     = "OllamaComfy"
 
     def call_ollama(self, ip_port, model_name, system_prompt, user_prompt):
         url = f"http://{ip_port}/v1/chat/completions"

@@ -3,7 +3,7 @@ from .utils import get_presets_dir
 
 
 class OllamaSavePresetNode:
-    CATEGORY = "Ollama"
+    CATEGORY = "OllamaComfy"
     NODE_TITLE = "Ollama Save Preset"
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("preset_prompt",)

@@ -39,7 +39,7 @@ def _to_pil(img):
 
 
 class OllamaRunPresetNode:
-    CATEGORY = "Ollama"
+    CATEGORY = "OllamaComfy"
     NODE_TITLE = "Ollama Run Preset"
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("response",)

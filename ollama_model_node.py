@@ -3,7 +3,7 @@ import os
 
 
 class OllamaModelNode:
-    CATEGORY = "Ollama"
+    CATEGORY = "OllamaComfy"
     NODE_TITLE = "Ollama Model"
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("model_name",)

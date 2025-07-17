@@ -32,7 +32,7 @@ class OllamaVisionNodeBase:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("response",)
     FUNCTION     = "call_ollama"
-    CATEGORY     = "Ollama"
+    CATEGORY     = "OllamaComfy"
 
     @staticmethod
     def _to_pil(img):
