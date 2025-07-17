@@ -1,7 +1,7 @@
 [
   "qwen2.5vl:7b",
-  "llama2:7b",
-  "gemma:2b",
-  "phi3:medium",
+  "gemma3:12b",
+  "gemma3:4b",
+  "llava:13b",
   "llava:7b"
 ]
