@@ -8,7 +8,7 @@ import logging
 from PIL import Image
 import numpy as np
 
-from .utils import get_presets_dir
+from .utils import get_presets_dir, pull_model
 
 logger = logging.getLogger("OllamaRunPresetNode")
 logger.setLevel(logging.DEBUG)
@@ -129,6 +129,7 @@ class OllamaRunPresetNode:
 
         body = json.dumps(payload).encode("utf-8")
 
+        pulled = False
         for attempt in range(1, 4):
             logger.info(f"OllamaRunPresetNode: Attempt {attempt}/3")
             req = urllib.request.Request(url, data=body, headers=headers, method="POST")
@@ -141,6 +142,10 @@ class OllamaRunPresetNode:
             except urllib.error.HTTPError as e:
                 err = f"HTTPError {e.code}: {e.reason}"
                 logger.warning(f"OllamaRunPresetNode: {err} on attempt {attempt}")
+                if e.code == 404 and not pulled:
+                    logger.info("OllamaRunPresetNode: model not found, pulling...")
+                    pulled = pull_model(ip_port, model_name)
+                    continue
                 if attempt == 3:
                     return (f"Error: {err}",)
             except Exception as e:

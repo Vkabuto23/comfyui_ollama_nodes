@@ -4,6 +4,8 @@ import urllib.request
 import json
 import logging
 
+from .utils import pull_model
+
 # Настраиваем логгер для этой ноды
 logger = logging.getLogger("OllamaNodeBase")
 logger.setLevel(logging.DEBUG)
@@ -39,6 +41,7 @@ class OllamaNodeBase:
         }
         data = json.dumps(payload).encode("utf-8")
 
+        pulled = False
         for attempt in range(1, 4):
             logger.info(f"OllamaNodeBase: Attempt {attempt}/3")
             logger.debug(f"OllamaNodeBase: POST {url} (payload {len(data)} bytes)")
@@ -60,6 +63,10 @@ class OllamaNodeBase:
             except urllib.error.HTTPError as e:
                 err = f"HTTPError {e.code}: {e.reason}"
                 logger.warning(f"OllamaNodeBase: {err} on attempt {attempt}")
+                if e.code == 404 and not pulled:
+                    logger.info("OllamaNodeBase: model not found, pulling...")
+                    pulled = pull_model(ip_port, model_name)
+                    continue
                 if attempt == 3:
                     return (f"Error: {err}",)
 

@@ -10,6 +10,8 @@ import logging
 from PIL import Image
 import numpy as np
 
+from .utils import pull_model
+
 logger = logging.getLogger("OllamaVisionNodeBase")
 logger.setLevel(logging.DEBUG)
 
@@ -22,9 +24,9 @@ class OllamaVisionNodeBase:
                 "model_name":    ("STRING", {"multiline": False}),
                 "system_prompt": ("STRING", {"multiline": True}),
                 "user_prompt":   ("STRING", {"multiline": True}),
-                "img":           ("IMAGE",  {}),
             },
             "optional": {
+                "img":        ("IMAGE", {}),
                 "max_tokens": ("INT", {"default": 1024}),
             }
         }
@@ -58,29 +60,39 @@ class OllamaVisionNodeBase:
             raise TypeError(f"Cannot handle shape: {arr.shape}")
         return Image.fromarray(arr, mode)
 
-    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt, img, max_tokens=1024):
-        try:
-            pil = self._to_pil(img)
-        except Exception as e:
-            logger.error("Conversion to PIL failed", exc_info=True)
-            return (f"Error converting image: {e}",)
+    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt, img=None, max_tokens=1024):
+        if img is not None:
+            try:
+                pil = self._to_pil(img)
+            except Exception as e:
+                logger.error("Conversion to PIL failed", exc_info=True)
+                return (f"Error converting image: {e}",)
 
-        pil.thumbnail((512, 512))
-        buf = io.BytesIO()
-        pil.save(buf, format="JPEG", quality=75)
-        data_url = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
-        logger.debug(f"OllamaVisionNodeBase: data_url length={len(data_url)}")
+            pil.thumbnail((512, 512))
+            buf = io.BytesIO()
+            pil.save(buf, format="JPEG", quality=75)
+            data_url = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+            logger.debug(f"OllamaVisionNodeBase: data_url length={len(data_url)}")
 
-        messages = [
-            {"role": "system", "content": [{"type":"text","text":system_prompt}]},
-            {"role": "user",   "content": [
-                {"type":"text","text":user_prompt},
-                {"type":"image_url","image_url":{"url":data_url}}
-            ]}
-        ]
+            messages = [
+                {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": user_prompt},
+                        {"type": "image_url", "image_url": {"url": data_url}},
+                    ],
+                },
+            ]
+        else:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+
         payload = {
-            "model":      model_name,
-            "messages":   messages,
+            "model": model_name,
+            "messages": messages,
             "max_tokens": max_tokens,
         }
         body = json.dumps(payload).encode("utf-8")
@@ -88,6 +100,7 @@ class OllamaVisionNodeBase:
         url = f"http://{ip_port}/v1/chat/completions"
         headers = {"Content-Type": "application/json"}
 
+        pulled = False
         for attempt in range(1, 4):
             logger.info(f"OllamaVisionNodeBase: Attempt {attempt}/3 (max_tokens={max_tokens})")
             req = urllib.request.Request(url, data=body, headers=headers, method="POST")
@@ -100,6 +113,10 @@ class OllamaVisionNodeBase:
             except urllib.error.HTTPError as e:
                 err = f"HTTPError {e.code}: {e.reason}"
                 logger.warning(f"OllamaVisionNodeBase: {err} on attempt {attempt}")
+                if e.code == 404 and not pulled:
+                    logger.info("OllamaVisionNodeBase: model not found, pulling...")
+                    pulled = pull_model(ip_port, model_name)
+                    continue
                 if attempt == 3:
                     return (f"Error: {err}",)
             except Exception as e:
