@@ -2,6 +2,6 @@
   "qwen2.5vl:7b",
   "gemma3:12b",
   "gemma3:4b",
-  "llava:13b",
-  "llava:7b"
+  "gemma3n:e4b",
+  "phi4-mini-reasoning:3.8b"
 ]
