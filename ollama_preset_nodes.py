@@ -38,7 +38,7 @@ class OllamaSavePresetNode:
 
 
 class OllamaLoadPresetNode:
-    CATEGORY = "Ollama"
+    CATEGORY = "OllamaComfy"
     NODE_TITLE = "Ollama Load Preset"
     RETURN_TYPES = ("STRING", "NODE_OVERLAY")
     RETURN_NAMES = ("preset_text", "overlay")
