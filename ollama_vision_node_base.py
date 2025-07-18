@@ -10,7 +10,7 @@ import logging
 from PIL import Image
 import numpy as np
 
-from .utils import pull_model
+from .utils import pull_model, stop_model
 
 logger = logging.getLogger("OllamaVisionNodeBase")
 logger.setLevel(logging.DEBUG)
@@ -24,6 +24,7 @@ class OllamaVisionNodeBase:
                 "model_name":    ("STRING", {"multiline": False}),
                 "system_prompt": ("STRING", {"multiline": True}),
                 "user_prompt":   ("STRING", {"multiline": True}),
+                "keep_in_memory": ("BOOLEAN", {"default": True, "forceInput": False}),
             },
             "optional": {
                 "img":        ("IMAGE", {}),
@@ -60,7 +61,7 @@ class OllamaVisionNodeBase:
             raise TypeError(f"Cannot handle shape: {arr.shape}")
         return Image.fromarray(arr, mode)
 
-    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt, img=None, max_tokens=1024):
+    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt, img=None, max_tokens=1024, keep_in_memory=True):
         if img is not None:
             try:
                 pil = self._to_pil(img)
@@ -94,6 +95,7 @@ class OllamaVisionNodeBase:
             "model": model_name,
             "messages": messages,
             "max_tokens": max_tokens,
+            "keep_alive": -1 if keep_in_memory else 0,
         }
         body = json.dumps(payload).encode("utf-8")
 
@@ -109,6 +111,8 @@ class OllamaVisionNodeBase:
                     j = json.loads(resp.read().decode("utf-8"))
                     text = j["choices"][0]["message"]["content"]
                     logger.info(f"OllamaVisionNodeBase: Got content length={len(text)}")
+                    if not keep_in_memory:
+                        stop_model(ip_port)
                     return (text,)
             except urllib.error.HTTPError as e:
                 err = f"HTTPError {e.code}: {e.reason}"

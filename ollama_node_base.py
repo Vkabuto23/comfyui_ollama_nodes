@@ -4,7 +4,7 @@ import urllib.request
 import json
 import logging
 
-from .utils import pull_model
+from .utils import pull_model, stop_model
 
 # Настраиваем логгер для этой ноды
 logger = logging.getLogger("OllamaNodeBase")
@@ -19,6 +19,7 @@ class OllamaNodeBase:
                 "model_name":    ("STRING", {"multiline": False}),
                 "system_prompt": ("STRING", {"multiline": True}),
                 "user_prompt":   ("STRING", {"multiline": True}),
+                "keep_in_memory": ("BOOLEAN", {"default": True, "forceInput": False}),
             }
         }
 
@@ -27,7 +28,7 @@ class OllamaNodeBase:
     FUNCTION     = "call_ollama"
     CATEGORY     = "OllamaComfy"
 
-    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt):
+    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt, keep_in_memory=True):
         url = f"http://{ip_port}/v1/chat/completions"
         headers = {
             "Content-Type":  "application/json",
@@ -37,7 +38,8 @@ class OllamaNodeBase:
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_prompt}
-            ]
+            ],
+            "keep_alive": -1 if keep_in_memory else 0
         }
         data = json.dumps(payload).encode("utf-8")
 
@@ -58,6 +60,8 @@ class OllamaNodeBase:
                     resp_json = json.loads(raw)
                     content = resp_json["choices"][0]["message"]["content"]
                     logger.info(f"OllamaNodeBase: Got content length={len(content)}")
+                    if not keep_in_memory:
+                        stop_model(ip_port)
                     return (content,)
 
             except urllib.error.HTTPError as e:

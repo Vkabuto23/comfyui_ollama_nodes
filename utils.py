@@ -70,3 +70,20 @@ def pull_model(ip_port: str, model_name: str) -> bool:
     except Exception as e:
         print(f"[pull_model] failed to pull {model_name}: {e}")
         return False
+
+
+def stop_model(ip_port: str) -> bool:
+    """Send a stop command to the Ollama API to unload the model from memory."""
+    import urllib.request
+    import json
+
+    url = f"http://{ip_port}/api/stop"
+    headers = {"Content-Type": "application/json"}
+    data = json.dumps({}).encode("utf-8")
+    req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.getcode() == 200
+    except Exception as e:
+        print(f"[stop_model] failed to stop model: {e}")
+        return False
