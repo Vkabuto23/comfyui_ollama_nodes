@@ -1,4 +1,8 @@
 import os
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 def get_presets_dir() -> str:
@@ -24,11 +28,13 @@ def pull_model(ip_port: str, model_name: str) -> bool:
     headers = {"Content-Type": "application/json"}
     data = json.dumps({"name": model_name}).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+    logger.debug(f"pull_model: POST {url} name={model_name}")
 
     try:
         with urllib.request.urlopen(req) as resp:
-            if resp.getcode() != 200:
-                print(f"[pull_model] HTTP {resp.getcode()} starting pull")
+            code = resp.getcode()
+            if code != 200:
+                logger.warning(f"pull_model: HTTP {code} starting pull")
                 return False
 
             totals = {}
@@ -46,6 +52,7 @@ def pull_model(ip_port: str, model_name: str) -> bool:
                     pbar.n = 100
                     pbar.refresh()
                     pbar.close()
+                    logger.info("pull_model: download completed")
                     return True
 
                 digest = info.get("digest")
@@ -65,25 +72,30 @@ def pull_model(ip_port: str, model_name: str) -> bool:
                 pbar.set_description(status)
 
             pbar.close()
+            logger.warning("pull_model: download did not complete")
             return False
 
     except Exception as e:
-        print(f"[pull_model] failed to pull {model_name}: {e}")
+        logger.error(f"pull_model: failed to pull {model_name}: {e}")
         return False
 
 
-def stop_model(ip_port: str) -> bool:
+def stop_model(ip_port: str, model_name: str | None = None) -> bool:
     """Send a stop command to the Ollama API to unload the model from memory."""
     import urllib.request
     import json
 
     url = f"http://{ip_port}/api/stop"
     headers = {"Content-Type": "application/json"}
-    data = json.dumps({}).encode("utf-8")
+    payload = {"name": model_name} if model_name else {}
+    data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+    logger.debug(f"stop_model: POST {url} payload={payload}")
     try:
         with urllib.request.urlopen(req) as resp:
-            return resp.getcode() == 200
+            code = resp.getcode()
+            logger.info(f"stop_model: HTTP {code}")
+            return code == 200
     except Exception as e:
-        print(f"[stop_model] failed to stop model: {e}")
+        logger.warning(f"stop_model: failed to stop model: {e}")
         return False

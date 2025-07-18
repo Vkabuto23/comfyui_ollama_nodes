@@ -61,7 +61,8 @@ class OllamaNodeBase:
                     content = resp_json["choices"][0]["message"]["content"]
                     logger.info(f"OllamaNodeBase: Got content length={len(content)}")
                     if not keep_in_memory:
-                        stop_model(ip_port)
+                        result = stop_model(ip_port, model_name)
+                        logger.info(f"OllamaNodeBase: stop_model result={result}")
                     return (content,)
 
             except urllib.error.HTTPError as e:

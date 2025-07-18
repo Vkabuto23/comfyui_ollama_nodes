@@ -61,7 +61,7 @@ class OllamaVisionNodeBase:
             raise TypeError(f"Cannot handle shape: {arr.shape}")
         return Image.fromarray(arr, mode)
 
-    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt, img=None, max_tokens=1024, keep_in_memory=True):
+    def call_ollama(self, ip_port, model_name, system_prompt, user_prompt, keep_in_memory=True, img=None, max_tokens=1024):
         if img is not None:
             try:
                 pil = self._to_pil(img)
@@ -112,7 +112,8 @@ class OllamaVisionNodeBase:
                     text = j["choices"][0]["message"]["content"]
                     logger.info(f"OllamaVisionNodeBase: Got content length={len(text)}")
                     if not keep_in_memory:
-                        stop_model(ip_port)
+                        result = stop_model(ip_port, model_name)
+                        logger.info(f"OllamaVisionNodeBase: stop_model result={result}")
                     return (text,)
             except urllib.error.HTTPError as e:
                 err = f"HTTPError {e.code}: {e.reason}"

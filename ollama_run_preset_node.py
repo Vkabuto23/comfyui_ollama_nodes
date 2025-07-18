@@ -84,7 +84,7 @@ class OllamaRunPresetNode:
             },
         }
 
-    def run(self, ip_port: str, preset_name: str, model_name: str, user_prompt: str, img=None, keep_in_memory=True):
+    def run(self, ip_port: str, preset_name: str, model_name: str, user_prompt: str, keep_in_memory=True, img=None):
         preset_dir = get_presets_dir()
         path = os.path.join(preset_dir, preset_name)
         system_prompt = ""
@@ -141,7 +141,8 @@ class OllamaRunPresetNode:
                     text = data["choices"][0]["message"]["content"]
                     logger.info(f"OllamaRunPresetNode: Got content length={len(text)}")
                     if not keep_in_memory:
-                        stop_model(ip_port)
+                        result = stop_model(ip_port, model_name)
+                        logger.info(f"OllamaRunPresetNode: stop_model result={result}")
                     return (text,)
             except urllib.error.HTTPError as e:
                 err = f"HTTPError {e.code}: {e.reason}"
