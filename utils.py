@@ -1,5 +1,7 @@
 import os
 import logging
+import urllib.request
+import json
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -81,16 +83,22 @@ def pull_model(ip_port: str, model_name: str) -> bool:
 
 
 def stop_model(ip_port: str, model_name: str | None = None) -> bool:
-    """Send a stop command to the Ollama API to unload the model from memory."""
-    import urllib.request
-    import json
-
-    url = f"http://{ip_port}/api/stop"
+    """
+    Send a request to unload the model from memory using the generate/chat endpoint.
+    """
+    # 1) Выбираем эндпоинт: generate для чистого unload-а
+    url = f"http://{ip_port}/api/generate"
     headers = {"Content-Type": "application/json"}
-    payload = {"name": model_name} if model_name else {}
+
+    # 2) Формируем payload
+    payload: dict = {}
+    if model_name:
+        payload["model"] = model_name
+        payload["keep_alive"] = 0
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+
     logger.debug(f"stop_model: POST {url} payload={payload}")
+    req = urllib.request.Request(url, data=data, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req) as resp:
             code = resp.getcode()
