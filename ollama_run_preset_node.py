@@ -8,7 +8,7 @@ import logging
 from PIL import Image
 import numpy as np
 
-from .utils import get_presets_dir, pull_model
+from .utils import get_presets_dir, pull_model, stop_model
 
 logger = logging.getLogger("OllamaRunPresetNode")
 logger.setLevel(logging.DEBUG)
@@ -77,13 +77,14 @@ class OllamaRunPresetNode:
                 "preset_name": (presets,),
                 "model_name": (models,),
                 "user_prompt": ("STRING", {"multiline": True, "lines": 5, "default": ""}),
+                "keep_in_memory": ("BOOLEAN", {"default": True, "forceInput": False}),
             },
             "optional": {
                 "img": ("IMAGE", {}),
             },
         }
 
-    def run(self, ip_port: str, preset_name: str, model_name: str, user_prompt: str, img=None):
+    def run(self, ip_port: str, preset_name: str, model_name: str, user_prompt: str, img=None, keep_in_memory=True):
         preset_dir = get_presets_dir()
         path = os.path.join(preset_dir, preset_name)
         system_prompt = ""
@@ -117,7 +118,7 @@ class OllamaRunPresetNode:
                     ],
                 },
             ]
-            payload = {"model": model_name, "messages": messages, "max_tokens": 1024}
+            payload = {"model": model_name, "messages": messages, "max_tokens": 1024, "keep_alive": -1 if keep_in_memory else 0}
         else:
             payload = {
                 "model": model_name,
@@ -125,6 +126,7 @@ class OllamaRunPresetNode:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
+                "keep_alive": -1 if keep_in_memory else 0,
             }
 
         body = json.dumps(payload).encode("utf-8")
@@ -138,6 +140,8 @@ class OllamaRunPresetNode:
                     data = json.loads(resp.read().decode("utf-8"))
                     text = data["choices"][0]["message"]["content"]
                     logger.info(f"OllamaRunPresetNode: Got content length={len(text)}")
+                    if not keep_in_memory:
+                        stop_model(ip_port)
                     return (text,)
             except urllib.error.HTTPError as e:
                 err = f"HTTPError {e.code}: {e.reason}"
