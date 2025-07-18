@@ -5,8 +5,8 @@
 ## Доступные ноды
 - **OllamaNodeBase** — базовый текстовый запрос к Ollama
 - **OllamaVisionNodeBase** — запрос с опциональной картинкой
-- **Ollama Save Preset** — сохранение пресета в папку `prompts/`
-- **Ollama Load Preset** — загрузка пресета из `prompts/`
+- **Ollama Save Preset** — сохранение пресета в папку `\ComfyUi\Ollama_presets`
+- **Ollama Load Preset** — загрузка пресета из `\ComfyUi\Ollama_presets`
 - **Ollama Model** — выпадающий список моделей из `list_models.json`
 - **Ollama Run Preset** — выполнение пресета с опциональным изображением
 
