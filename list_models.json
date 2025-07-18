@@ -3,5 +3,6 @@
   "gemma3:12b",
   "gemma3:4b",
   "gemma3n:e4b",
+  "gemma3n:e2b",
   "phi4-mini-reasoning:3.8b"
 ]
