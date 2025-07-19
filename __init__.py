@@ -5,6 +5,7 @@ from .ollama_model_node import OllamaModelNode
 from .ollama_run_preset_node import OllamaRunPresetNode
 from .ollama_reasoning_node import OllamaReasoningNode
 from .ollama_reasoning_model_node import OllamaReasoningModelNode
+from .ollama_compare_image_node import OllamaCompareImageNode
 
 NODE_CLASS_MAPPINGS = {
     "OllamaNodeBase": OllamaNodeBase,
@@ -15,6 +16,7 @@ NODE_CLASS_MAPPINGS = {
     "OllamaRunPresetNode": OllamaRunPresetNode,
     "OllamaReasoningNode": OllamaReasoningNode,
     "OllamaReasoningModelNode": OllamaReasoningModelNode,
+    "OllamaCompareImageNode": OllamaCompareImageNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -26,4 +28,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "OllamaRunPresetNode": "Ollama Run Preset",
     "OllamaReasoningNode": "Ollama Reasoning",
     "OllamaReasoningModelNode": "Reasoning Model",
+    "OllamaCompareImageNode": "Ollama Compare Image",
 }

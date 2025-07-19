@@ -15,7 +15,7 @@ class OllamaReasoningNode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "ip_port": ("STRING", {"multiline": False}),
+                "ip_port":  ("STRING", {"default": "localhost:11434"}),
                 "model_name": ("STRING", {"multiline": False}),
                 "system_prompt": ("STRING", {"multiline": True}),
                 "user_prompt": ("STRING", {"multiline": True}),
@@ -29,15 +29,11 @@ class OllamaReasoningNode:
     CATEGORY = "OllamaComfy"
 
     def _parse_answer(self, text: str):
-        thoughts = ""
-        response = text
-        pattern = re.compile(
-            r"(?is)(?:thoughts?|analysis)\s*[:\-]\s*(.*?)\n(?:response|answer|final)\s*[:\-]\s*(.*)"
-        )
-        m = pattern.search(text)
-        if m:
-            thoughts = m.group(1).strip()
-            response = m.group(2).strip()
+        # Собираем все блоки <think>…</think>
+        thoughts_list = re.findall(r"(?is)<think>(.*?)</think>", text)
+        thoughts = "\n\n".join(t.strip() for t in thoughts_list) if thoughts_list else ""
+        # Убираем их из основного текста
+        response = re.sub(r"(?is)<think>.*?</think>", "", text).strip()
         return thoughts, response
 
     def run(self, ip_port, model_name, system_prompt, user_prompt, keep_in_memory=True):

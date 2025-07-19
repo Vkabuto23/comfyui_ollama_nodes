@@ -20,7 +20,7 @@ class OllamaVisionNodeBase:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "ip_port":       ("STRING", {"multiline": False}),  # e.g. "localhost:11434"
+                "ip_port":       ("STRING", {"default": "localhost:11434"}),  # e.g. "localhost:11434"
                 "model_name":    ("STRING", {"multiline": False}),
                 "system_prompt": ("STRING", {"multiline": True}),
                 "user_prompt":   ("STRING", {"multiline": True}),
