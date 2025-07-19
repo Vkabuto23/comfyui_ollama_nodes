@@ -9,6 +9,8 @@
 - **Ollama Load Preset** — загрузка пресета из `\ComfyUi\Ollama_presets`
 - **Ollama Model** — выпадающий список моделей из `list_models.json`
 - **Ollama Run Preset** — выполнение пресета с опциональным изображением
+- **Ollama Reasoning** — запуск reasoning моделей без картинки
+- **Reasoning Model** — выпадающий список reasoning моделей из `reasoning_model_list.json`
 
 
 ## 1. Установка Ollama
